@@ -1,63 +1,30 @@
 #!/bin/bash 
 #Created by Leslie Amegbor 
-#Date Created 
-
-: '
-
-#created an error messeage function 
-errormsg(){
-    echo "Error: $1 "| tree -a "error_file"
-    exit 1 
-}
-
-log_file= /var/log/jenkins_logs.log
-error_file= /var/log/jenkins_errorlogs.log
-
-if [ ! -f "$log_file" ] ; then
-sudo touch /var/log/jenkins_logsfile.log 
-else 
-errormsg "Log file cannot be created."
-fi 
-
-if [! -f "$error_file"] ; then
-sudo touch /var/log/jenkins_errorlogs.log 
-else 
-errormsg "Log file cannot be created."
-fi 
-
-#update and upgrade the system 
-echo "Running System Update and and upgrades"
-
-$(sudo apt update -y && sudo apt upgrade -y > /dev/null )
-echo "System upgrade and update completed at $(date +%H:%M.%S)"  | tee -a
-
-
-
-#set hostname 
-sudo  hostnamectl set-hostname jenkins
-echo " Hostname has been changed to Jenkins." | tee -a "$log_file" || errormsg "Unable to change Hostname"
-sudo su - ubuntu
-'
-
+#Date Created March 31, 2024
 
 # Function to handle errors
+
 errormsg() {
-    if [[ $?!= 0 ]] ; then
+    if [[ $? != 0 ]] ; then
         echo "ERROR: Please check ERROR_LOG_FILE.log for more information"
+        exit
     fi
 }
 
 # Define log files
-readonly LOG_FILE="$(dirname "${BASH_SOURCE[0]}")/jenkinslog.log"
-readonly ERROR_LOG_FILE="$(dirname "${BASH_SOURCE[0]}")/jenkins_errorlogs.log"
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly LOG_FILE="$SCRIPT_DIR/jenkinslog.log"
+readonly ERROR_LOG_FILE="$SCRIPT_DIR/jenkins_errorlogs.log"
 
 # Running updates and upgrades with error handling
 {
     sudo apt update -y && sudo apt upgrade -y
 } >> /dev/null 2>>"$ERROR_LOG_FILE"
+
 errormsg
+
 { 
-echo -e"\n Update and Upgrades completed  successfully!" 
+echo -e "\n Update and Upgrades completed  successfully!" 
 echo "-----------------------------------------------------------"
 } >> "$LOG_FILE"
 
